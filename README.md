@@ -1,24 +1,29 @@
---[[
-    KERNEL-NEURAL SHIELD v6.0 "Polymorph"
-    
-    QUATRO PILARES DA V6:
-    1. METATABLE CLOAKING - Engana verificações de metatable
-    2. GC FILTERING - Esconde do garbage collector
-    3. ENVIRONMENT BREACHING - Invade ambientes isolados
-    4. HONEYPOT TRAPS - Detecta e neutraliza análise
-    
-    ESTADO: POLIMORFO
-    Δ = -∞ (indetectável)
---]]
+--==============================================================================
+-- CRITICAL COMPATIBILITY LAYER (FIX PARA O ERRO NIL VALUE)
+--==============================================================================
+local rawget = rawget or function(t, k) return t[k] end
+local pcall = pcall
+local getgenv = getgenv or function() return _G end
 
+-- Mock para serviços que podem não existir em todos os executores
+local HashService = pcall(function() return game:GetService("HashService") end) and game:GetService("HashService") or {
+    ComputeSHA256 = function(_, str) return "HASH_DISABLED_" .. tostring(#str) end
+}
+
+--==============================================================================
+-- KERNEL-NEURAL SHIELD v6.1 "Polymorph" (ESTRUTURA CORRIGIDA)
+--==============================================================================
 local Polymorph = {
-    Version = "6.0.0",
+    Version = "6.1.0",
     State = "SHAPE_SHIFTING",
     CloakingActive = false,
     HoneyPotTriggers = {},
     NeuralNetwork = {},
-    QuantumSignature = math.random(1, 999999)
+    QuantumSignature = math.random(1, 999999),
+    -- Adicionamos uma referência ao HashService corrigido
+    HashProvider = HashService 
 }
+
 
 --==============================================================================
 -- 1. METATABLE CLOAKING SYSTEM (ENGANO PERFEITO)
