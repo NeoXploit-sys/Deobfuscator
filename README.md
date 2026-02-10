@@ -1,13 +1,13 @@
--- Em vez de chamar direto, use pcall (Protected Call)
-local success, result = pcall(function()
-    -- Aqui vai a parte que está dando erro
-    return debug.getconstants(alguma_funcao)
-end)
+--==============================================================================
+-- FINAL SHIELD LOCK (v6.2.1)
+--==============================================================================
+local FinalPolymorph = table.freeze and table.freeze(Polymorph) or Polymorph
 
-if not success then
-    -- Se der erro, ele não crasha o script, apenas avisa
-    print("Aviso: Função de análise bloqueada pelo Delta")
-end
+-- Garante que ninguém (nem o Delta) consiga deletar o Polymorph da memória
+getgenv()._PHANTOM_SHIELD = FinalPolymorph
+
+print(" [SYSTEM] Polymorph v6.2.1 Active & Synced with Deobfuscator Logic")
+
 
 
 --==============================================================================
