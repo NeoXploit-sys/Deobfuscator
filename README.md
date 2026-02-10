@@ -1,44 +1,13 @@
---[[
-    KERNEL-NEURAL SHIELD v6.0 "Polymorph"
-    
-    QUATRO PILARES DA V6:
-    1. METATABLE CLOAKING - Engana verificações de metatable
-    2. GC FILTERING - Esconde do garbage collector
-    3. ENVIRONMENT BREACHING - Invade ambientes isolados
-    4. HONEYPOT TRAPS - Detecta e neutraliza análise
-    
-    ESTADO: POLIMORFO
-    Δ = -∞ (indetectável)
---]]
-
---==============================================================================
--- POLYMORPH v6.2 - COMPATIBILITY LAYER (FIX PARA DELTA)
---==============================================================================
-
--- Força a existência de funções que o Delta pode ter escondido
-local getgenv = (getgenv or function() return _G end)
-local rawget = (rawget or function(t, k) return t[k] end)
-
--- Fallback para o newcclosure (se der erro, vira uma função comum)
-local safe_newcclosure = (newcclosure or function(f) return f end)
-
--- Mock para o HashService (Evita o erro de nil se o serviço não existir)
-local HashProvider = {
-    ComputeSHA256 = function(_, data) return tostring(#data .. "hash") end
-}
-pcall(function() 
-    HashProvider = game:GetService("HashService") 
+-- Em vez de chamar direto, use pcall (Protected Call)
+local success, result = pcall(function()
+    -- Aqui vai a parte que está dando erro
+    return debug.getconstants(alguma_funcao)
 end)
 
---==============================================================================
--- INÍCIO DO POLYMORPH v6.2
---==============================================================================
-local Polymorph = {
-    Version = "6.2.0",
-    State = "SHAPE_SHIFTING",
-    -- Agora usamos o provedor seguro que definimos acima
-    Hasher = HashProvider 
-}
+if not success then
+    -- Se der erro, ele não crasha o script, apenas avisa
+    print("Aviso: Função de análise bloqueada pelo Delta")
+end
 
 
 --==============================================================================
