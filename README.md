@@ -1385,7 +1385,7 @@ task.spawn(C_18);
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Farm.List.AutoFarm.TextButton.LocalScript
 local function C_1f()
 local script = G2L["1f"];
-	-- LocalScript dentro do botão (VERSÃO CORRIGIDA)
+	-- LocalScript dentro do botão (VERSÃO COM TELEPORT PARA O BAÚ)
 	local button = script.Parent
 	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
@@ -1399,7 +1399,7 @@ local script = G2L["1f"];
 	local bv = nil
 	local bg = nil
 	
-	-- ROTA
+	-- ROTA (agora o último ponto é onde vamos teleportar)
 	local rota = {
 		Vector3.new(-63, alturaVoo, 800),
 		Vector3.new(-63, alturaVoo, 1600),
@@ -1410,9 +1410,12 @@ local script = G2L["1f"];
 		Vector3.new(-63, alturaVoo, 5600),
 		Vector3.new(-63, alturaVoo, 6400),
 		Vector3.new(-63, alturaVoo, 7200),
-		Vector3.new(-63, alturaVoo, 8500),
-		Vector3.new(-63, -358, 9512)
+		Vector3.new(-63, alturaVoo, 8500)
+		-- Último ponto removido, vamos teleportar direto
 	}
+	
+	-- POSIÇÃO DO BAÚ (para teleporte no final)
+	local posicaoBau = Vector3.new(-63, -358, 9512)
 	
 	-- FUNÇÃO PARA LIMPAR TUDO COM SEGURANÇA
 	local function limparTudo()
@@ -1450,7 +1453,7 @@ local script = G2L["1f"];
 			local humanoid = char:FindFirstChildOfClass("Humanoid")
 			if humanoid then
 				pcall(function()
-					humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Volta ao estado normal
+					humanoid:ChangeState(Enum.HumanoidStateType.Running)
 				end)
 			end
 		end
@@ -1463,7 +1466,7 @@ local script = G2L["1f"];
 		return char:FindFirstChild("HumanoidRootPart")
 	end
 	
-	-- FUNÇÃO DO NOCLIP CORRIGIDA
+	-- FUNÇÃO DO NOCLIP
 	local function setupNoclip()
 		if noclipConnection then
 			noclipConnection:Disconnect()
@@ -1478,14 +1481,12 @@ local script = G2L["1f"];
 			local humanoid = char:FindFirstChildOfClass("Humanoid")
 			local root = char:FindFirstChild("HumanoidRootPart")
 	
-			-- Colocar humanoid em estado Physics (ignora colisões)
 			if humanoid then
 				pcall(function()
-					humanoid:ChangeState(Enum.HumanoidStateType.Physics) -- 11 = Physics
+					humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 				end)
 			end
 	
-			-- Desativar colisão das partes
 			if root then
 				pcall(function()
 					root.CanCollide = false
@@ -1541,7 +1542,7 @@ local script = G2L["1f"];
 			-- Setup noclip
 			setupNoclip()
 	
-			-- PERCURSO
+			-- PERCURSO (voar pelos pontos)
 			for i, ponto in pairs(rota) do
 				if not autoFarmAtivo then break end
 	
@@ -1583,6 +1584,17 @@ local script = G2L["1f"];
 				task.wait(0.1)
 			end
 	
+			-- TELEPORTAR DIRETO PARA O BAÚ (sem tween)
+			if autoFarmAtivo then
+				root = getRoot()
+				if root then
+					pcall(function()
+						root.CFrame = CFrame.new(posicaoBau) -- Teleporte instantâneo
+					end)
+					task.wait(0.5) -- Pequena pausa para o servidor registrar
+				end
+			end
+	
 			limparTudo()
 	
 			if autoFarmAtivo then
@@ -1597,13 +1609,13 @@ local script = G2L["1f"];
 	
 		if autoFarmAtivo then
 			button.BackgroundColor3 = Color3.new(0, 1, 0) -- Verde
-			
+	
 			limparTudo()
 			task.wait(0.1)
 			coroutine.wrap(executarAutoFarm)()
 		else
 			button.BackgroundColor3 = Color3.new(1, 0, 0) -- Vermelho
-			
+	
 			limparTudo()
 		end
 	end
@@ -1613,32 +1625,6 @@ local script = G2L["1f"];
 	
 	-- COR INICIAL
 	button.BackgroundColor3 = Color3.new(1, 0, 0)
-	
-	
-	
-	-- FUNÇÃO DE NOCLIP (Pode colocar no final do script)
-	local function iniciarNoclipConstante()
-		if noclipConnection then
-			noclipConnection:Disconnect()
-		end
-	
-		noclipConnection = RunService.Stepped:Connect(function()
-			local char = player.Character
-			if char and autoFarmAtivo then
-				for _, part in ipairs(char:GetDescendants()) do
-					if part:IsA("BasePart") then
-						part.CanCollide = false
-					end
-				end
-	
-				local humanoid = char:FindFirstChildOfClass("Humanoid")
-				if humanoid then
-					-- O estado Physics desativa a física interna que empurra o boneco para fora das paredes
-					humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-				end
-			end
-		end)
-	end
 end;
 task.spawn(C_1f);
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Tools.List.TPTool.LocalScript
