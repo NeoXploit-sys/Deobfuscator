@@ -11,7 +11,8 @@
 local G2L = {};
 
 -- StarterGui.BABFT.SagittariusHubBABFT
-G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"):WaitForChild("RobloxGui"));
+G2L["1"] = Instance.new("ScreenGui", gethui());
+G2L["1"]["IgnoreGuiInset"] = true;
 G2L["1"]["Name"] = [[SagittariusHubBABFT]];
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 
@@ -1615,17 +1616,29 @@ local script = G2L["1f"];
 	
 	
 	
-	-- NO CLIP DEFINITIVO (Adicione isso onde precisar atravessar tudo)
-	noclipConnection = RunService.Stepped:Connect(function()
-		local char = player.Character
-		if char and autoFarmAtivo then
-			for _, part in ipairs(char:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = false
+	-- FUNÇÃO DE NOCLIP (Pode colocar no final do script)
+	local function iniciarNoclipConstante()
+		if noclipConnection then
+			noclipConnection:Disconnect()
+		end
+	
+		noclipConnection = RunService.Stepped:Connect(function()
+			local char = player.Character
+			if char and autoFarmAtivo then
+				for _, part in ipairs(char:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+	
+				local humanoid = char:FindFirstChildOfClass("Humanoid")
+				if humanoid then
+					-- O estado Physics desativa a física interna que empurra o boneco para fora das paredes
+					humanoid:ChangeState(Enum.HumanoidStateType.Physics)
 				end
 			end
-		end
-	end)
+		end)
+	end
 end;
 task.spawn(C_1f);
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Tools.List.TPTool.LocalScript
@@ -2085,28 +2098,19 @@ task.spawn(C_85);
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Close.LocalScript
 local function C_91()
 local script = G2L["91"];
-	-- LocalScript com fade out
+	-- LocalScript para fechar a ScreenGui
 	local button = script.Parent
-	local screenGui = button:FindFirstAncestorOfClass("ScreenGui")
-	local TweenService = game:GetService("TweenService")
 	
 	button.MouseButton1Click:Connect(function()
-		if screenGui then
-			-- Animação de fade out em todos os elementos
-			for _, child in pairs(screenGui:GetDescendants()) do
-				if child:IsA("GuiObject") then
-					local tween = TweenService:Create(
-						child,
-						TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-						{BackgroundTransparency = 1, TextTransparency = 1}
-					)
-					tween:Play()
-				end
-			end
+		-- Procura o ancestral que seja a ScreenGui
+		local screenGui = button:FindFirstAncestorOfClass("ScreenGui")
 	
-			-- Espera a animação e esconde
-			task.wait(0.3)
-			screenGui.Enabled = false
+		if screenGui then
+			-- Se você quiser que ela suma para sempre até você executar o script de novo:
+			screenGui:Destroy()
+	
+			-- OU se você quiser apenas esconder para poder ligar depois:
+			-- screenGui.Enabled = false
 		end
 	end)
 end;
@@ -2123,7 +2127,6 @@ local script = G2L["92"];
 		local dragStart
 		local startPos
 	
-		-- Função que calcula a nova posição e suaviza o movimento
 		local function update(input)
 			local delta = input.Position - dragStart
 			local targetPos = UDim2.new(
@@ -2133,18 +2136,15 @@ local script = G2L["92"];
 				startPos.Y.Offset + delta.Y
 			)
 	
-			-- Cria o efeito de deslizamento suave
 			TweenService:Create(frame, TweenInfo.new(0.15), {Position = targetPos}):Play()
 		end
 	
-		-- Quando você clica no Frame
 		frame.InputBegan:Connect(function(input)
 			if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
 				dragging = true
 				dragStart = input.Position
 				startPos = frame.Position
 	
-				-- Detecta quando você solta o clique
 				input.Changed:Connect(function()
 					if input.UserInputState == Enum.UserInputState.End then
 						dragging = false
@@ -2153,14 +2153,12 @@ local script = G2L["92"];
 			end
 		end)
 	
-		-- Quando você move o mouse/dedo
 		frame.InputChanged:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 				dragInput = input
 			end
 		end)
 	
-		-- O loop que atualiza a posição enquanto você arrasta
 		UIS.InputChanged:Connect(function(input)
 			if input == dragInput and dragging then
 				update(input)
@@ -2168,8 +2166,12 @@ local script = G2L["92"];
 		end)
 	end
 	
-	-- Como usar:
-	makeDraggable(script.Parent.ImageLabel)
+	-- Busca o ImageLabel chamado "BackGround" que está no mesmo nível do script
+	local background = script.Parent:FindFirstChild("BackGround")
+	
+	if background then
+		makeDraggable(background)
+	end
 end;
 task.spawn(C_92);
 
