@@ -7,7 +7,7 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
 ]=]
 
--- Instances: 145 | Scripts: 20 | Modules: 0 | Tags: 0
+-- Instances: 146 | Scripts: 21 | Modules: 0 | Tags: 0
 local G2L = {};
 
 -- StarterGui.BABFT.SagittariusHubBABFT
@@ -75,6 +75,7 @@ G2L["6"]["BackgroundTransparency"] = 1;
 
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Home
 G2L["7"] = Instance.new("Frame", G2L["6"]);
+G2L["7"]["Visible"] = false;
 G2L["7"]["BorderSizePixel"] = 0;
 G2L["7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["7"]["Size"] = UDim2.new(0, 456, 0, 277);
@@ -164,7 +165,6 @@ G2L["10"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
 
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Farm
 G2L["11"] = Instance.new("Frame", G2L["6"]);
-G2L["11"]["Visible"] = false;
 G2L["11"]["BorderSizePixel"] = 0;
 G2L["11"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
 G2L["11"]["Size"] = UDim2.new(0, 456, 0, 277);
@@ -1333,6 +1333,11 @@ G2L["91"] = Instance.new("LocalScript", G2L["90"]);
 
 
 
+-- StarterGui.BABFT.SagittariusHubBABFT.Dragify
+G2L["92"] = Instance.new("LocalScript", G2L["1"]);
+G2L["92"]["Name"] = [[Dragify]];
+
+
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Home.List.IY.LocalScript
 local function C_e()
 local script = G2L["e"];
@@ -1386,8 +1391,8 @@ local script = G2L["1f"];
 	local player = Players.LocalPlayer
 	
 	-- CONFIGURAÇÕES
-	local velocidadeFly = 600
-	local alturaVoo = 60
+	local velocidadeFly = 500
+	local alturaVoo = 57
 	local autoFarmAtivo = false
 	local noclipConnection = nil
 	local bv = nil
@@ -1405,7 +1410,7 @@ local script = G2L["1f"];
 		Vector3.new(-63, alturaVoo, 6400),
 		Vector3.new(-63, alturaVoo, 7200),
 		Vector3.new(-63, alturaVoo, 8500),
-		Vector3.new(-63, -358, 9494)
+		Vector3.new(-63, -358, 9512)
 	}
 	
 	-- FUNÇÃO PARA LIMPAR TUDO COM SEGURANÇA
@@ -2092,5 +2097,66 @@ local script = G2L["91"];
 	end)
 end;
 task.spawn(C_91);
+-- StarterGui.BABFT.SagittariusHubBABFT.Dragify
+local function C_92()
+local script = G2L["92"];
+	local UIS = game:GetService("UserInputService")
+	local TweenService = game:GetService("TweenService")
+	
+	local function makeDraggable(frame)
+		local dragging = false
+		local dragInput
+		local dragStart
+		local startPos
+	
+		-- Função que calcula a nova posição e suaviza o movimento
+		local function update(input)
+			local delta = input.Position - dragStart
+			local targetPos = UDim2.new(
+				startPos.X.Scale, 
+				startPos.X.Offset + delta.X, 
+				startPos.Y.Scale, 
+				startPos.Y.Offset + delta.Y
+			)
+	
+			-- Cria o efeito de deslizamento suave
+			TweenService:Create(frame, TweenInfo.new(0.15), {Position = targetPos}):Play()
+		end
+	
+		-- Quando você clica no Frame
+		frame.InputBegan:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+				dragging = true
+				dragStart = input.Position
+				startPos = frame.Position
+	
+				-- Detecta quando você solta o clique
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragging = false
+					end
+				end)
+			end
+		end)
+	
+		-- Quando você move o mouse/dedo
+		frame.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				dragInput = input
+			end
+		end)
+	
+		-- O loop que atualiza a posição enquanto você arrasta
+		UIS.InputChanged:Connect(function(input)
+			if input == dragInput and dragging then
+				update(input)
+			end
+		end)
+	end
+	
+	-- Como usar:
+	makeDraggable(script.Parent.ImageLabel)
+end;
+task.spawn(C_92);
 
 return G2L["1"], require;
