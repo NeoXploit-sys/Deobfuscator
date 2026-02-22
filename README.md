@@ -11,7 +11,8 @@
 local G2L = {};
 
 -- StarterGui.BABFT.SagittariusHubBABFT
-G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"] = Instance.new("ScreenGui", gethui());
+G2L["1"]["IgnoreGuiInset"] = true;
 G2L["1"]["Name"] = [[SagittariusHubBABFT]];
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 
