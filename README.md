@@ -11,7 +11,7 @@
 local G2L = {};
 
 -- StarterGui.BABFT.SagittariusHubBABFT
-G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"] = Instance.new("ScreenGui", game:GetService("CoreGui"):WaitForChild("RobloxGui"));
 G2L["1"]["Name"] = [[SagittariusHubBABFT]];
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 
@@ -1612,6 +1612,20 @@ local script = G2L["1f"];
 	
 	-- COR INICIAL
 	button.BackgroundColor3 = Color3.new(1, 0, 0)
+	
+	
+	
+	-- NO CLIP DEFINITIVO (Adicione isso onde precisar atravessar tudo)
+	noclipConnection = RunService.Stepped:Connect(function()
+		local char = player.Character
+		if char and autoFarmAtivo then
+			for _, part in ipairs(char:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end
+	end)
 end;
 task.spawn(C_1f);
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Tools.List.TPTool.LocalScript
