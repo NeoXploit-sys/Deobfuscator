@@ -11,8 +11,7 @@
 local G2L = {};
 
 -- StarterGui.BABFT.SagittariusHubBABFT
-G2L["1"] = Instance.new("ScreenGui", gethui());
-G2L["1"]["IgnoreGuiInset"] = true;
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
 G2L["1"]["Name"] = [[SagittariusHubBABFT]];
 G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 
@@ -1385,7 +1384,7 @@ task.spawn(C_18);
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Farm.List.AutoFarm.TextButton.LocalScript
 local function C_1f()
 local script = G2L["1f"];
-	-- LocalScript dentro do botão (VERSÃO COM TELEPORT PARA O BAÚ)
+	-- LocalScript dentro do botão (VERSÃO COM RESET E DELAY CORRIGIDOS)
 	local button = script.Parent
 	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
@@ -1399,7 +1398,7 @@ local script = G2L["1f"];
 	local bv = nil
 	local bg = nil
 	
-	-- ROTA (agora o último ponto é onde vamos teleportar)
+	-- ROTA
 	local rota = {
 		Vector3.new(-63, alturaVoo, 800),
 		Vector3.new(-63, alturaVoo, 1600),
@@ -1411,13 +1410,12 @@ local script = G2L["1f"];
 		Vector3.new(-63, alturaVoo, 6400),
 		Vector3.new(-63, alturaVoo, 7200),
 		Vector3.new(-63, alturaVoo, 8500)
-		-- Último ponto removido, vamos teleportar direto
 	}
 	
-	-- POSIÇÃO DO BAÚ (para teleporte no final)
-	local posicaoBau = Vector3.new(-63, -358, 9512)
+	-- POSIÇÃO DO BAÚ
+	local posicaoBau = Vector3.new(-55, -358, 9490)
 	
-	-- FUNÇÃO PARA LIMPAR TUDO COM SEGURANÇA
+	-- FUNÇÃO PARA LIMPAR TUDO
 	local function limparTudo()
 		if noclipConnection then
 			noclipConnection:Disconnect()
@@ -1438,7 +1436,6 @@ local script = G2L["1f"];
 			end
 		end)
 	
-		-- Resetar colisões do personagem
 		local char = player.Character
 		if char then
 			for _, part in pairs(char:GetDescendants()) do
@@ -1449,7 +1446,6 @@ local script = G2L["1f"];
 				end
 			end
 	
-			-- Restaurar estado do humanoid
 			local humanoid = char:FindFirstChildOfClass("Humanoid")
 			if humanoid then
 				pcall(function()
@@ -1459,15 +1455,32 @@ local script = G2L["1f"];
 		end
 	end
 	
-	-- FUNÇÃO PARA OBTER O ROOT COM SEGURANÇA
+	-- FUNÇÃO PARA OBTER O ROOT
 	local function getRoot()
 		local char = player.Character
 		if not char then return nil end
 		return char:FindFirstChild("HumanoidRootPart")
 	end
 	
-	-- FUNÇÃO DO NOCLIP
-	local function setupNoclip()
+	-- FUNÇÃO PARA RESETAR O PERSONAGEM (MORRER E VOLTAR PRA BASE)
+	local function resetarPersonagem()
+		pcall(function()
+			local char = player.Character
+			if char then
+				local humanoid = char:FindFirstChildOfClass("Humanoid")
+				if humanoid then
+					humanoid.Health = 0 -- Mata o personagem
+				end
+			end
+		end)
+	
+		-- Aguardar o novo personagem spawnar
+		player.CharacterAdded:Wait()
+		task.wait(1) -- Tempo extra pro jogo carregar tudo
+	end
+	
+	-- NOCLIP INQUEBRÁVEL
+	local function noclipInquebravel()
 		if noclipConnection then
 			noclipConnection:Disconnect()
 		end
@@ -1475,31 +1488,21 @@ local script = G2L["1f"];
 		noclipConnection = RunService.Stepped:Connect(function()
 			if not autoFarmAtivo then return end
 	
-			local char = player.Character
-			if not char then return end
+			pcall(function()
+				local char = player.Character
+				if not char then return end
 	
-			local humanoid = char:FindFirstChildOfClass("Humanoid")
-			local root = char:FindFirstChild("HumanoidRootPart")
-	
-			if humanoid then
-				pcall(function()
+				local humanoid = char:FindFirstChildOfClass("Humanoid")
+				if humanoid then
 					humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-				end)
-			end
-	
-			if root then
-				pcall(function()
-					root.CanCollide = false
-				end)
-			end
-	
-			for _, part in pairs(char:GetChildren()) do
-				if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-					pcall(function()
-						part.CanCollide = false
-					end)
 				end
-			end
+	
+				for _, obj in pairs(char:GetDescendants()) do
+					if obj:IsA("BasePart") then
+						obj.CanCollide = false
+					end
+				end
+			end)
 		end)
 	end
 	
@@ -1539,8 +1542,7 @@ local script = G2L["1f"];
 				bg.Parent = root
 			end)
 	
-			-- Setup noclip
-			setupNoclip()
+			noclipInquebravel()
 	
 			-- PERCURSO (voar pelos pontos)
 			for i, ponto in pairs(rota) do
@@ -1584,21 +1586,25 @@ local script = G2L["1f"];
 				task.wait(0.1)
 			end
 	
-			-- TELEPORTAR DIRETO PARA O BAÚ (sem tween)
+			-- TELEPORTAR PARA O BAÚ E ESPERAR O SERVIDOR PROCESSAR
 			if autoFarmAtivo then
 				root = getRoot()
 				if root then
 					pcall(function()
-						root.CFrame = CFrame.new(posicaoBau) -- Teleporte instantâneo
+						root.CFrame = CFrame.new(posicaoBau)
 					end)
-					task.wait(0.5) -- Pequena pausa para o servidor registrar
+	
+					-- Delay MAIOR pro servidor registrar o ouro (3 segundos)
+					task.wait(3)
 				end
 			end
 	
+			-- LIMPAR TUDO E RESETAR PERSONAGEM PRA VOLTAR PRA BASE
 			limparTudo()
 	
 			if autoFarmAtivo then
-				task.wait(1)
+				resetarPersonagem() -- Mata e spawna de novo na base
+				task.wait(1) -- Espera estabilizar
 			end
 		end
 	end
@@ -1608,14 +1614,12 @@ local script = G2L["1f"];
 		autoFarmAtivo = not autoFarmAtivo
 	
 		if autoFarmAtivo then
-			button.BackgroundColor3 = Color3.new(0, 1, 0) -- Verde
-	
+			button.BackgroundColor3 = Color3.new(0, 1, 0)
 			limparTudo()
 			task.wait(0.1)
 			coroutine.wrap(executarAutoFarm)()
 		else
-			button.BackgroundColor3 = Color3.new(1, 0, 0) -- Vermelho
-	
+			button.BackgroundColor3 = Color3.new(1, 0, 0)
 			limparTudo()
 		end
 	end
