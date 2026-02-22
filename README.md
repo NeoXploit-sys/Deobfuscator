@@ -1385,7 +1385,7 @@ task.spawn(C_18);
 -- StarterGui.BABFT.SagittariusHubBABFT.BackGround.Pages.Farm.List.AutoFarm.TextButton.LocalScript
 local function C_1f()
 local script = G2L["1f"];
-	-- LocalScript dentro do botão (VERSÃO COM RESET E DELAY CORRIGIDOS)
+	-- LocalScript dentro do botão (VERSÃO CORRIGIDA)
 	local button = script.Parent
 	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
@@ -1463,23 +1463,6 @@ local script = G2L["1f"];
 		return char:FindFirstChild("HumanoidRootPart")
 	end
 	
-	-- FUNÇÃO PARA RESETAR O PERSONAGEM (MORRER E VOLTAR PRA BASE)
-	local function resetarPersonagem()
-		pcall(function()
-			local char = player.Character
-			if char then
-				local humanoid = char:FindFirstChildOfClass("Humanoid")
-				if humanoid then
-					humanoid.Health = 0 -- Mata o personagem
-				end
-			end
-		end)
-	
-		-- Aguardar o novo personagem spawnar
-		player.CharacterAdded:Wait()
-		task.wait(1) -- Tempo extra pro jogo carregar tudo
-	end
-	
 	-- NOCLIP INQUEBRÁVEL
 	local function noclipInquebravel()
 		if noclipConnection then
@@ -1510,14 +1493,12 @@ local script = G2L["1f"];
 	-- FUNÇÃO PARA EXECUTAR O AUTO FARM
 	local function executarAutoFarm()
 		while autoFarmAtivo do
-			-- Aguardar personagem
 			local char = player.Character
 			if not char then
 				player.CharacterAdded:Wait()
 				char = player.Character
 			end
 	
-			-- Pegar root
 			local root = getRoot()
 			if not root then
 				repeat
@@ -1528,7 +1509,6 @@ local script = G2L["1f"];
 	
 			if not autoFarmAtivo then break end
 	
-			-- Criar forças de voo
 			pcall(function()
 				bv = Instance.new("BodyVelocity")
 				bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
@@ -1545,7 +1525,6 @@ local script = G2L["1f"];
 	
 			noclipInquebravel()
 	
-			-- PERCURSO (voar pelos pontos)
 			for i, ponto in pairs(rota) do
 				if not autoFarmAtivo then break end
 	
@@ -1587,7 +1566,7 @@ local script = G2L["1f"];
 				task.wait(0.1)
 			end
 	
-			-- TELEPORTAR PARA O BAÚ E ESPERAR O SERVIDOR PROCESSAR
+			-- TELEPORTE E COLETA DO BAÚ (COM TEMPO SUFICIENTE)
 			if autoFarmAtivo then
 				root = getRoot()
 				if root then
@@ -1595,17 +1574,24 @@ local script = G2L["1f"];
 						root.CFrame = CFrame.new(posicaoBau)
 					end)
 	
-					-- Delay MAIOR pro servidor registrar o ouro (3 segundos)
-					task.wait(3)
+					-- FICAR PARADO POR 3 SEGUNDOS PARA GARANTIR A COLETA
+					local tempoInicio = tick()
+					while autoFarmAtivo and tick() - tempoInicio < 3 do
+						-- Manter noclip ativo durante a espera
+						pcall(function()
+							if bv and bv.Parent then
+								bv.Velocity = Vector3.new(0, 0, 0)
+							end
+						end)
+						task.wait(0.1)
+					end
 				end
 			end
 	
-			-- LIMPAR TUDO E RESETAR PERSONAGEM PRA VOLTAR PRA BASE
 			limparTudo()
 	
 			if autoFarmAtivo then
-				resetarPersonagem() -- Mata e spawna de novo na base
-				task.wait(1) -- Espera estabilizar
+				task.wait(1) -- Pequena pausa antes de reiniciar
 			end
 		end
 	end
